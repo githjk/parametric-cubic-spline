@@ -25,7 +25,6 @@
 #pragma once
 
 #include <cassert>
-#include <cmath>
 
 namespace parametric_cubic_spline {
 
@@ -42,8 +41,9 @@ namespace internal {
         StorageType() = default;
         StorageType(std::size_t) { /* Do nothing */ }
         inline void resize(std::size_t) { /* Do nothing */ }
+        inline T* data() { return data_.data(); }
         inline T& operator[](int pos) { return data_[pos]; }
-        inline const T& operator[](int pos) const { return data_[pos]; }    
+        inline const T& operator[](int pos) const { return data_[pos]; } 
     };
 
     /**
@@ -57,6 +57,7 @@ namespace internal {
         StorageType() = default;
         StorageType(std::size_t size) { resize(size); }
         inline void resize(std::size_t size) { data_ = std::vector<T>(size, 0.0); }
+        inline T* data() { return data_.data(); }
         inline T& operator[](int pos) { return data_[pos]; }
         inline const T& operator[](int pos) const { return data_[pos]; }
     };
@@ -81,23 +82,20 @@ void Spline<T, NumPoints, NumDims>::set(
     const T *left_tangent,
     const T *right_tangent
 ) {
-    // Initialize auxilliary storage
-    internal::StorageType<T, NumPoints> a(num_points), b(num_points), c(num_points);
-
-    // In case of dynamic size, resize moments
-    if(NumPoints == Dynamic || NumDims == Dynamic)
-    {
-        moments_.resize(num_points*num_dims);
-    }
-
     // Assign pointer to pivot points
     num_points_ = num_points;
     num_dims_ = num_dims;
     points_ = points;
 
+    // In case of dynamic size, resize moments
+    if(NumPoints == Dynamic || NumDims == Dynamic)
+    {
+        moments_.resize(num_points_*num_dims_);
+    }
+
     // Compute moments
-    compute_moments(points_, num_points, num_dims, left_bc, right_bc, 
-        left_tangent, right_tangent, a, b, c, moments_);
+    compute_moments(points_, num_points_, num_dims_, left_bc, right_bc, 
+        left_tangent, right_tangent, moments_);
 }
 
 template<typename T, std::size_t NumPoints, std::size_t NumDims> 
@@ -174,12 +172,12 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
     const BoundaryCondition right_bc,
     const T* left_tangent,
     const T* right_tangent,
-    internal::StorageType<T, NumPoints> &a,
-    internal::StorageType<T, NumPoints> &b,
-    internal::StorageType<T, NumPoints> &c,
     internal::StorageType<T, NumPoints*NumDims> &m
 )
 {
+    // Initialize auxilliary storage
+    internal::StorageType<T, NumPoints> a(num_points), b(num_points), c(num_points);
+
     for(std::size_t i = 0; i < num_points; i++)
     {
         if(i == 0)
@@ -193,8 +191,10 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
                 c[i] = 1.0;
                 for(std::size_t j = 0; j < num_dims; j++)
                 {
-                    // store d in m_
-                    m[i*num_dims+j] = 6.0 * ((points[(i+1)*num_dims+j] - points[i*num_dims+j]) - left_tangent[j]);
+                    // store d in moments_
+                    T tangent_component = 0.0;
+                    if(left_tangent) tangent_component = left_tangent[j];
+                    m[i*num_dims+j] = 6.0 * ((points[(i+1)*num_dims+j] - points[i*num_dims+j]) - tangent_component);
                 }
                 break;
             case BoundaryCondition::Periodic:
@@ -203,7 +203,7 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
                 c[i] = 1.0;
                 for(std::size_t j = 0; j < num_dims; j++)
                 {
-                    // store d in m_
+                    // store d in moments_
                     m[i*num_dims+j] = 6.0 * ((points[(i+1)*num_dims+j] - points[i*num_dims+j]) 
                             - (points[i*num_dims+j] - points[(num_points-1)*num_dims+j]));
                 }                
@@ -218,7 +218,7 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
                 c[i] = 0.0;
                 for(std::size_t j = 0; j < num_dims; j++)
                 {
-                    // store d in m_
+                    // store d in moments_
                     m[i*num_dims+j] = 0.0;
                 }
             }
@@ -234,8 +234,10 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
                 c[i] = 0.0;
                 for(std::size_t j = 0; j < num_dims; j++)
                 {
-                    // store d in m_
-                    m[i*num_dims+j] = 6.0 * (right_tangent[j] - (points[i*num_dims+j] - points[(num_points-1)*num_dims+j]));
+                    // store d in moments_
+                    T tangent_component = 0.0;
+                    if(right_tangent) tangent_component = right_tangent[j];                    
+                    m[i*num_dims+j] = 6.0 * (tangent_component - (points[i*num_dims+j] - points[(i-1)*num_dims+j]));
                 }
                 break;
             case BoundaryCondition::Periodic:
@@ -244,7 +246,7 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
                 c[i] = 1.0;
                 for(std::size_t j = 0; j < num_dims; j++)
                 {
-                    // store d in m_
+                    // store d in moments_
                     m[i*num_dims+j] = 6.0 * ((points[0+j] - points[(num_points-1)*num_dims+j]) 
                         - (points[(num_points-1)*num_dims+j] - points[(num_points-2)*num_dims+j]));
                 }                
@@ -259,7 +261,7 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
                 c[i] = 0.0;
                 for(std::size_t j = 0; j < num_dims; j++)
                 {
-                    // store d in m_
+                    // store d in moments_
                     m[i*num_dims+j] = 0.0;
                 }
             }
@@ -272,7 +274,7 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
             c[i] = 1.0;
             for(std::size_t j = 0; j < num_dims; j++)
             {
-                // store d in m_
+                // store d in moments_
                 m[i*num_dims+j] = 6.0 * ((points[(i+1)*num_dims+j] - points[i*num_dims+j]) 
                     - (points[i*num_dims+j] - points[(i-1)*num_dims+j]));
             }
@@ -280,7 +282,17 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
     }
 
     // Solve spline problem
-    tdma(num_points, num_dims, a, b, c, m);
+    if(a[0] != 0 || c[num_points-1] != 0)
+    {
+        // perturbed problem
+        internal::StorageType<T, NumPoints> q(num_points), u(num_points);
+        tdma(num_points, num_dims, a, b, c, m, q.data(), u.data());        
+    }
+    else
+    {
+        // strictly tridiagonal problem
+        tdma(num_points, num_dims, a, b, c, m);        
+    }
 }
 
 template<typename T, std::size_t NumPoints, std::size_t NumDims> 
@@ -290,15 +302,36 @@ void Spline<T, NumPoints, NumDims>::tdma(
     internal::StorageType<T, NumPoints> &a,
     internal::StorageType<T, NumPoints> &b,
     internal::StorageType<T, NumPoints> &c,
-    internal::StorageType<T, NumPoints*NumDims> &d
+    internal::StorageType<T, NumPoints*NumDims> &d,
+    T *q,
+    T *u
 )
 {
+    // Perturbed problem?
+    bool is_perturbed = a[0] != 0 || c[num_points-1] != 0;
+    T vn = 0.0;
+    if(is_perturbed)
+    {
+        assert(q && "q must not be a null pointer.");
+        assert(u && "u must not be a null pointer.");
+
+        // Modify problem
+        vn = a[0]/b[0];
+        u[0] = -b[0];
+        u[num_points-1] = c[num_points-1];
+        a[0] = 0;
+        b[0] = 2*b[0];
+        b[num_points-1] = b[num_points-1] + c[num_points-1]*vn;
+        c[num_points-1] = 0;
+    }
+
     // Forward elimination
     // i = 1 ... n:
     for(std::size_t i = 1; i < num_points; i++)
     {
         T f = a[i]/b[i-1];
         b[i] = b[i] - f*c[i-1];
+        if(is_perturbed) u[i] = u[i] - f*u[i-1];
         for(std::size_t j = 0; j < num_dims; j++)
         {
             d[i*num_dims+j] = d[i*num_dims+j] - f*d[(i-1)*num_dims+j];
@@ -312,12 +345,28 @@ void Spline<T, NumPoints, NumDims>::tdma(
         d[(num_points-1)*num_dims+j] = d[(num_points-1)*num_dims+j]/b[num_points-1];
     }
     // i = n-1 ... 0:
-    for(std::size_t i = num_points; i > 0; i--)
+    for(std::size_t i = num_points-2; i >= 0; i--)
     {
+        if(is_perturbed) q[i] = (u[i] - c[i]*q[i+1])/b[i];
         for(std::size_t j = 0; j < num_dims; j++)
         {
-            d[(i-1)*num_dims+j] = (d[(i-1)*num_dims+j] - c[i-1]*d[i*num_dims+j])/b[i-1];
+            d[i*num_dims+j] = (d[i*num_dims+j] - c[i]*d[(i+1)*num_dims+j])/b[i];
         }
+    }
+
+    if(is_perturbed)
+    {
+        // Reconstruct solution
+        T vq = q[0] - q[num_points-1]*vn;
+        for(std::size_t j = 0; j < num_dims; j++)
+        {
+            T vy = d[j] - d[(num_points-1)*num_dims+j]*vn;
+            T k = vy/(1 + vq);
+            for(std::size_t i = 0; i < num_points; i++)
+            {
+                d[(i-1)*num_dims+j] = d[(i-1)*num_dims+j] - k*q[i];
+            }       
+        }        
     }
 }
 

@@ -119,9 +119,6 @@ private:
         const BoundaryCondition right_bc,
         const T* left_tangent,
         const T* right_tangent,
-        internal::StorageType<T, NumPoints> &a,
-        internal::StorageType<T, NumPoints> &b,
-        internal::StorageType<T, NumPoints> &c,
         internal::StorageType<T, NumPoints*NumDims> &m
     );
 
@@ -131,7 +128,9 @@ private:
         internal::StorageType<T, NumPoints> &a,
         internal::StorageType<T, NumPoints> &b,
         internal::StorageType<T, NumPoints> &c,
-        internal::StorageType<T, NumPoints*NumDims> &d
+        internal::StorageType<T, NumPoints*NumDims> &d,
+        T *q = nullptr,
+        T *u = nullptr      
     );
 };
 
