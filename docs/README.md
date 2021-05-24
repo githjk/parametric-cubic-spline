@@ -1,5 +1,12 @@
 # Parametric Cubic Spline #
 
+## Boundary Conditions ##
+PCS supports four types of boundary conditions
+- Natural: The moments at the end point are zero.
+- Hermite: The tangent vector to the end point is defined.
+- Periodic
+- Not-a-knot
+
 ## Algorithms ##
 
 ### Tridiagonal Matrix Algorithm (TDMA) ###

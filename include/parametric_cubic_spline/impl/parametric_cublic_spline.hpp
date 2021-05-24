@@ -286,12 +286,12 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
     {
         // perturbed problem
         internal::StorageType<T, NumPoints> q(num_points), u(num_points);
-        tdma(num_points, num_dims, a, b, c, m, q.data(), u.data());        
+        tdma(num_points, num_dims, a, b, c, m, q.data(), u.data());
     }
     else
     {
         // strictly tridiagonal problem
-        tdma(num_points, num_dims, a, b, c, m);        
+        tdma(num_points, num_dims, a, b, c, m);
     }
 }
 
@@ -314,6 +314,13 @@ void Spline<T, NumPoints, NumDims>::tdma(
     {
         assert(q && "q must not be a null pointer.");
         assert(u && "u must not be a null pointer.");
+
+        // Initialize q and u with zero
+        for(std::size_t i = 1; i <num_points; i++)
+        {
+            q[i] = 0.0; 
+            u[i] = 0.0;
+        }
 
         // Modify problem
         vn = a[0]/b[0];

@@ -112,14 +112,9 @@ static const TestProblem test_problem3(
 );
 
 
-class MyTestFixture: public ::testing::TestWithParam<TestProblem> { 
-public: 
-   void SetUp() {}
-   void TestBody() {}
-   void TearDown() {}
-};
+class TestFixture: public ::testing::TestWithParam<TestProblem> { };
 
-TEST_P(MyTestFixture, MyTestName)
+TEST_P(TestFixture, DynamicPointsDynamicDims)
 {
     TestProblem problem = GetParam();
 
@@ -144,9 +139,56 @@ TEST_P(MyTestFixture, MyTestName)
     }
 }
 
+TEST_P(TestFixture, DynamicPointsFixedDims)
+{
+    TestProblem problem = GetParam();
+
+    Spline<float, Dynamic, 2> spline;
+    spline.set(
+        problem.points_.data(), 
+        problem.num_points_, 
+        problem.left_bc_,
+        problem.right_bc_,
+        problem.left_tangent_.data(),
+        problem.right_tangent_.data()
+    );
+
+    std::size_t eval_points_size = problem.eval_pos_.size()*problem.num_dims_;
+    std::vector<float> eval_points(eval_points_size, 0.0);
+    spline.eval(problem.eval_pos_.data(), 11, eval_points.data());        
+
+    for(std::size_t i = 0; i < eval_points_size; i++)
+    {
+        EXPECT_LT(fabs(eval_points[i] - problem.expected_points_[i]), 0.001);
+    }
+}
+
+TEST_P(TestFixture, FixedPointsFixedDims)
+{
+    TestProblem problem = GetParam();
+
+    Spline<float, 4, 2> spline;
+    spline.set(
+        problem.points_.data(), 
+        problem.left_bc_,
+        problem.right_bc_,
+        problem.left_tangent_.data(),
+        problem.right_tangent_.data()
+    );
+
+    std::size_t eval_points_size = problem.eval_pos_.size()*problem.num_dims_;
+    std::vector<float> eval_points(eval_points_size, 0.0);
+    spline.eval(problem.eval_pos_.data(), 11, eval_points.data());
+
+    for(std::size_t i = 0; i < eval_points_size; i++)
+    {
+        EXPECT_LT(fabs(eval_points[i] - problem.expected_points_[i]), 0.001);
+    }
+}
+
 INSTANTIATE_TEST_SUITE_P(
-    MyTestSuite,
-    MyTestFixture,
+    TestSuite,
+    TestFixture,
     ::testing::Values(
         test_problem1,
         test_problem2,
