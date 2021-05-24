@@ -129,8 +129,7 @@ private:
         internal::StorageType<T, NumPoints> &b,
         internal::StorageType<T, NumPoints> &c,
         internal::StorageType<T, NumPoints*NumDims> &d,
-        T *q = nullptr,
-        T *u = nullptr
+        T *q = nullptr
     );
 };
 
