@@ -7,20 +7,11 @@ dimensions.
 
 ### Tridiagonal Matrix Algorithm (TDMA) ###
 Computation of the moments requires solving the linear system
-<center>
-<!--
 $$
 Ax = d
 $$
--->
-
-![](https://bit.ly/3ugGjWS)
-
-</center>
 where A is of the form
-
-<center>
-<!-- $$
+$$
 A = 
 \begin{bmatrix}
   b_1 & c_1 &     &     & a_0     \\ 
@@ -29,28 +20,15 @@ A =
       &     &\cdot&\cdot& c_{n-1} \\
   c_n &     &     & a_n & b_n
 \end{bmatrix}.
-$$ -->
+$$
 
-![](https://bit.ly/3fd5jdc)
+By exploiting the structure of $A$, the problem can be solved in linear time $O(n)$ instead of $O(n^3)$ required by Gaussian elimination. 
 
-</center>
-
-By exploiting the structure of A, the problem can be solved in linear time O(n) instead of O(n³) required by Gaussian elimination. 
-
-If a<sub>0</sub>=c<sub>n</sub>=0, e.g. in case of natural bounding conditions, the system is of tridiagonal form and can be readily solved by the tridiagonal matrix algorithm (TDMA), also known as Thomas algorithm. In the perturbed case, e.g. arising from periodic bounding conditions, we can make use of the Sherman-Morrison formula to recover a tridiagonal problem. The above problem can be expressed as
-<center>
-<!--
+If $a_0=c_n=0$, e.g. in case of natural bounding conditions, the system is of tridiagonal form and can be readily solved by the tridiagonal matrix algorithm (TDMA), also known as Thomas algorithm. In the perturbed case, e.g. arising from periodic bounding conditions, we can make use of the Sherman-Morrison formula to recover a tridiagonal problem. The above problem can be expressed as
 $$
 (A'+uv^T)x=d
 $$
--->
-
-![](https://bit.ly/3vkZIak)
-
-</center>
 where
-<center>
-<!--
 $$
 \begin{aligned}
 u^T &= \begin{bmatrix} -b_1 & 0 & \cdots & 0 & c_n \end{bmatrix}, \\
@@ -64,13 +42,8 @@ A'  &= \begin{bmatrix}
 \end{bmatrix}.
 \end{aligned}
 $$
--->
 
-![](https://bit.ly/2SkWAgi)
-
-</center>
-
-Hence, A' is triadiagonal again. The solution to the original problem is now obtained by solving 
+Hence, $A'$ is triadiagonal again. The solution to the original problem is now obtained by solving 
 $$
 A'\begin{bmatrix}y & q\end{bmatrix} = \begin{bmatrix}d & u\end{bmatrix}
 $$
