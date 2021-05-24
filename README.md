@@ -11,7 +11,7 @@ $$
 Ax=d
 $$
 where $A$ is of the form
-$$
+<!-- $$
 A = 
 \begin{bmatrix}
   b_1 & c_1 &     &     & a_0     \\ 
@@ -20,7 +20,8 @@ A =
       &     &\cdot&\cdot& c_{n-1} \\
   c_n &     &     & a_n & b_n
 \end{bmatrix}.
-$$
+$$ -->
+![equation](https://bit.ly/3fd5jdc)
 
 By exploiting the structure of $A$, the problem can be solved in linear time $O(n)$ instead of $O(n^3)$ required by Gaussian elimination. 
 
