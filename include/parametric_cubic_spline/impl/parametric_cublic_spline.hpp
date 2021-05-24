@@ -3,17 +3,17 @@
  *
  * Parametric Cubic Spline Library
  * Copyright (c) 2021-, Michael Heidingsfeld
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,7 +43,7 @@ namespace internal {
         inline void resize(std::size_t) { /* Do nothing */ }
         inline T* data() { return data_.data(); }
         inline T& operator[](int pos) { return data_[pos]; }
-        inline const T& operator[](int pos) const { return data_[pos]; } 
+        inline const T& operator[](int pos) const { return data_[pos]; }
     };
 
     /**
@@ -65,18 +65,18 @@ namespace internal {
 } // namespace: internal
 
 
-template<typename T, std::size_t NumPoints, std::size_t NumDims> 
-Spline<T, NumPoints, NumDims>::Spline() 
+template<typename T, std::size_t NumPoints, std::size_t NumDims>
+Spline<T, NumPoints, NumDims>::Spline()
 {
     static_assert(std::is_floating_point<T>::value, "T must be a floating point type.");
     static_assert(NumPoints != 1, "NumPoints must be either 'Dynamic' or greater than 1.");
 }
 
-template<typename T, std::size_t NumPoints, std::size_t NumDims> 
+template<typename T, std::size_t NumPoints, std::size_t NumDims>
 void Spline<T, NumPoints, NumDims>::set(
     const T *points,
     const std::size_t num_points,
-    const std::size_t num_dims,    
+    const std::size_t num_dims,
     const BoundaryCondition left_bc,
     const BoundaryCondition right_bc,
     const T *left_tangent,
@@ -94,14 +94,14 @@ void Spline<T, NumPoints, NumDims>::set(
     }
 
     // Compute moments
-    compute_moments(points_, num_points_, num_dims_, left_bc, right_bc, 
+    compute_moments(points_, num_points_, num_dims_, left_bc, right_bc,
         left_tangent, right_tangent, moments_);
 }
 
-template<typename T, std::size_t NumPoints, std::size_t NumDims> 
+template<typename T, std::size_t NumPoints, std::size_t NumDims>
 void Spline<T, NumPoints, NumDims>::set(
     const T *points,
-    const std::size_t num_points,    
+    const std::size_t num_points,
     const BoundaryCondition left_bc,
     const BoundaryCondition right_bc,
     const T *left_tangent,
@@ -112,7 +112,7 @@ void Spline<T, NumPoints, NumDims>::set(
     set(points, num_points, NumDims, left_bc, right_bc, left_tangent, right_tangent);
 }
 
-template<typename T, std::size_t NumPoints, std::size_t NumDims> 
+template<typename T, std::size_t NumPoints, std::size_t NumDims>
 void Spline<T, NumPoints, NumDims>::set(
     const T *points,
     const BoundaryCondition left_bc,
@@ -126,7 +126,7 @@ void Spline<T, NumPoints, NumDims>::set(
     set(points, NumPoints, NumDims, left_bc, right_bc, left_tangent, right_tangent);
 }
 
-template<typename T, std::size_t NumPoints, std::size_t NumDims> 
+template<typename T, std::size_t NumPoints, std::size_t NumDims>
 void Spline<T, NumPoints, NumDims>::eval(
     const T pos,
     T *out_point
@@ -148,9 +148,9 @@ void Spline<T, NumPoints, NumDims>::eval(
         T d = points_[i*num_dims_+j] - 1.0/6.0*moments_[i*num_dims_+j];
         *out_point++ = 1.0/6.0*(t1*moments_[i*num_dims_+j] + t0*moments_[(i+1)*num_dims_+j]) + c*t + d;
     }
-}    
+}
 
-template<typename T, std::size_t NumPoints, std::size_t NumDims> 
+template<typename T, std::size_t NumPoints, std::size_t NumDims>
 void Spline<T, NumPoints, NumDims>::eval(
     const T *pos,
     const std::size_t num_pos,
@@ -163,7 +163,7 @@ void Spline<T, NumPoints, NumDims>::eval(
     }
 }
 
-template<typename T, std::size_t NumPoints, std::size_t NumDims> 
+template<typename T, std::size_t NumPoints, std::size_t NumDims>
 void Spline<T, NumPoints, NumDims>::compute_moments(
     const T* points,
     const std::size_t num_points,
@@ -204,9 +204,9 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
                 for(std::size_t j = 0; j < num_dims; j++)
                 {
                     // store d in moments_
-                    m[i*num_dims+j] = 6.0 * ((points[(i+1)*num_dims+j] - points[i*num_dims+j]) 
+                    m[i*num_dims+j] = 6.0 * ((points[(i+1)*num_dims+j] - points[i*num_dims+j])
                             - (points[i*num_dims+j] - points[(num_points-1)*num_dims+j]));
-                }                
+                }
                 break;
             // TODO
             //case BoundaryCondition::NotAKnot:
@@ -236,7 +236,7 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
                 {
                     // store d in moments_
                     T tangent_component = 0.0;
-                    if(right_tangent) tangent_component = right_tangent[j];                    
+                    if(right_tangent) tangent_component = right_tangent[j];
                     m[i*num_dims+j] = 6.0 * (tangent_component - (points[i*num_dims+j] - points[(i-1)*num_dims+j]));
                 }
                 break;
@@ -247,9 +247,9 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
                 for(std::size_t j = 0; j < num_dims; j++)
                 {
                     // store d in moments_
-                    m[i*num_dims+j] = 6.0 * ((points[0+j] - points[(num_points-1)*num_dims+j]) 
+                    m[i*num_dims+j] = 6.0 * ((points[0+j] - points[(num_points-1)*num_dims+j])
                         - (points[(num_points-1)*num_dims+j] - points[(num_points-2)*num_dims+j]));
-                }                
+                }
                 break;
             // TODO
             //case BoundaryCondition::NotAKnot:
@@ -275,7 +275,7 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
             for(std::size_t j = 0; j < num_dims; j++)
             {
                 // store d in moments_
-                m[i*num_dims+j] = 6.0 * ((points[(i+1)*num_dims+j] - points[i*num_dims+j]) 
+                m[i*num_dims+j] = 6.0 * ((points[(i+1)*num_dims+j] - points[i*num_dims+j])
                     - (points[i*num_dims+j] - points[(i-1)*num_dims+j]));
             }
         }
@@ -295,7 +295,7 @@ void Spline<T, NumPoints, NumDims>::compute_moments(
     }
 }
 
-template<typename T, std::size_t NumPoints, std::size_t NumDims> 
+template<typename T, std::size_t NumPoints, std::size_t NumDims>
 void Spline<T, NumPoints, NumDims>::tdma(
     const std::size_t num_points,
     const std::size_t num_dims,
@@ -318,7 +318,7 @@ void Spline<T, NumPoints, NumDims>::tdma(
         // Initialize q and u with zero
         for(std::size_t i = 1; i <num_points; i++)
         {
-            q[i] = 0.0; 
+            q[i] = 0.0;
             u[i] = 0.0;
         }
 
@@ -373,8 +373,8 @@ void Spline<T, NumPoints, NumDims>::tdma(
             for(std::size_t i = 0; i < num_points; i++)
             {
                 d[i*num_dims+j] = d[i*num_dims+j] - k*q[i];
-            }       
-        }        
+            }
+        }
     }
 }
 

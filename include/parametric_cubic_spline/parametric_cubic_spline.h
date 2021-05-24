@@ -3,17 +3,17 @@
  *
  * Parametric Cubic Spline Library
  * Copyright (c) 2021-, Michael Heidingsfeld
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -71,7 +71,7 @@ public:
     void set(
         const T *points,
         const std::size_t num_points,
-        const std::size_t num_dims,        
+        const std::size_t num_dims,
         const BoundaryCondition left_bc = BoundaryCondition::Natural,
         const BoundaryCondition right_bc = BoundaryCondition::Natural,
         const T *left_tangent = nullptr,
@@ -100,7 +100,7 @@ public:
     // variable lengths
     void eval(
         const T *pos,
-        const std::size_t num_pos,        
+        const std::size_t num_pos,
         T *out_points
     );
 
@@ -114,7 +114,7 @@ private:
     static void compute_moments(
         const T* points,
         const std::size_t num_points,
-        const std::size_t num_dims,        
+        const std::size_t num_dims,
         const BoundaryCondition left_bc,
         const BoundaryCondition right_bc,
         const T* left_tangent,
@@ -130,7 +130,7 @@ private:
         internal::StorageType<T, NumPoints> &c,
         internal::StorageType<T, NumPoints*NumDims> &d,
         T *q = nullptr,
-        T *u = nullptr      
+        T *u = nullptr
     );
 };
 

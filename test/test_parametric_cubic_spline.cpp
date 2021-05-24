@@ -3,17 +3,17 @@
  *
  * Parametric Cubic Spline Library
  * Copyright (c) 2021-, Michael Heidingsfeld
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -46,7 +46,7 @@ public:
 
     TestProblem() = default;
     TestProblem(
-        std::initializer_list<float> points, 
+        std::initializer_list<float> points,
         std::size_t num_points,
         std::size_t num_dims,
         BoundaryCondition left_bc,
@@ -59,23 +59,23 @@ public:
         points_(points),
         num_points_(num_points),
         num_dims_(num_dims),
-        left_bc_(left_bc),            
+        left_bc_(left_bc),
         right_bc_(right_bc),
         left_tangent_(left_tangent),
         right_tangent_(right_tangent),
         eval_pos_(eval_pos),
         expected_points_(expected_points)
-    {};   
+    {};
 };
 
 static const TestProblem test_problem1(
-    { 1.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0,-1.0 }, 
-    4, 
+    { 1.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0,-1.0 },
+    4,
     2,
     BoundaryCondition::Natural,
     BoundaryCondition::Natural,
     { 0.0, 0.0 },
-    { 0.0, 0.0 },    
+    { 0.0, 0.0 },
     { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 },
     { 1.0000, 0.0000, 0.1634,-0.1274,-0.5328,-0.1792, \
      -0.9482,-0.0798,-0.9600, 0.2320,-0.6500, 0.6500, \
@@ -83,8 +83,8 @@ static const TestProblem test_problem1(
       0.1274,-0.1634, 0.0000,-1.0000 }
 );
 static const TestProblem test_problem2(
-    { 1.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0,-1.0 }, 
-    4, 
+    { 1.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0,-1.0 },
+    4,
     2,
     BoundaryCondition::Hermite,
     BoundaryCondition::Hermite,
@@ -97,8 +97,8 @@ static const TestProblem test_problem2(
       0.2268,-0.6352, 0.0000,-1.0000 }
 );
 static const TestProblem test_problem3(
-    { 1.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0,-1.0 }, 
-    4, 
+    { 1.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0,-1.0 },
+    4,
     2,
     BoundaryCondition::Periodic,
     BoundaryCondition::Periodic,
@@ -114,62 +114,25 @@ static const TestProblem test_problem3(
 
 class TestFixture: public ::testing::TestWithParam<TestProblem> { };
 
+INSTANTIATE_TEST_SUITE_P(
+    TestSuite,
+    TestFixture,
+    ::testing::Values(
+        test_problem1,
+        test_problem2,
+        test_problem3
+    )
+);
+
 TEST_P(TestFixture, DynamicPointsDynamicDims)
 {
     TestProblem problem = GetParam();
 
     Spline<float, Dynamic, Dynamic> spline;
     spline.set(
-        problem.points_.data(), 
-        problem.num_points_, 
+        problem.points_.data(),
+        problem.num_points_,
         problem.num_dims_,
-        problem.left_bc_,
-        problem.right_bc_,
-        problem.left_tangent_.data(),
-        problem.right_tangent_.data()
-    );
-
-    std::size_t eval_points_size = problem.eval_pos_.size()*problem.num_dims_;
-    std::vector<float> eval_points(eval_points_size, 0.0);
-    spline.eval(problem.eval_pos_.data(), 11, eval_points.data());        
-
-    for(std::size_t i = 0; i < eval_points_size; i++)
-    {
-        EXPECT_LT(fabs(eval_points[i] - problem.expected_points_[i]), 0.001);
-    }
-}
-
-TEST_P(TestFixture, DynamicPointsFixedDims)
-{
-    TestProblem problem = GetParam();
-
-    Spline<float, Dynamic, 2> spline;
-    spline.set(
-        problem.points_.data(), 
-        problem.num_points_, 
-        problem.left_bc_,
-        problem.right_bc_,
-        problem.left_tangent_.data(),
-        problem.right_tangent_.data()
-    );
-
-    std::size_t eval_points_size = problem.eval_pos_.size()*problem.num_dims_;
-    std::vector<float> eval_points(eval_points_size, 0.0);
-    spline.eval(problem.eval_pos_.data(), 11, eval_points.data());        
-
-    for(std::size_t i = 0; i < eval_points_size; i++)
-    {
-        EXPECT_LT(fabs(eval_points[i] - problem.expected_points_[i]), 0.001);
-    }
-}
-
-TEST_P(TestFixture, FixedPointsFixedDims)
-{
-    TestProblem problem = GetParam();
-
-    Spline<float, 4, 2> spline;
-    spline.set(
-        problem.points_.data(), 
         problem.left_bc_,
         problem.right_bc_,
         problem.left_tangent_.data(),
@@ -186,12 +149,49 @@ TEST_P(TestFixture, FixedPointsFixedDims)
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    TestSuite,
-    TestFixture,
-    ::testing::Values(
-        test_problem1,
-        test_problem2,
-        test_problem3
-    )
-);
+TEST_P(TestFixture, DynamicPointsFixedDims)
+{
+    TestProblem problem = GetParam();
+
+    Spline<float, Dynamic, 2> spline;
+    spline.set(
+        problem.points_.data(),
+        problem.num_points_,
+        problem.left_bc_,
+        problem.right_bc_,
+        problem.left_tangent_.data(),
+        problem.right_tangent_.data()
+    );
+
+    std::size_t eval_points_size = problem.eval_pos_.size()*problem.num_dims_;
+    std::vector<float> eval_points(eval_points_size, 0.0);
+    spline.eval(problem.eval_pos_.data(), 11, eval_points.data());
+
+    for(std::size_t i = 0; i < eval_points_size; i++)
+    {
+        EXPECT_LT(fabs(eval_points[i] - problem.expected_points_[i]), 0.001);
+    }
+}
+
+TEST_P(TestFixture, FixedPointsFixedDims)
+{
+    TestProblem problem = GetParam();
+
+    Spline<float, 4, 2> spline;
+    spline.set(
+        problem.points_.data(),
+        problem.left_bc_,
+        problem.right_bc_,
+        problem.left_tangent_.data(),
+        problem.right_tangent_.data()
+    );
+
+    std::size_t eval_points_size = problem.eval_pos_.size()*problem.num_dims_;
+    std::vector<float> eval_points(eval_points_size, 0.0);
+    spline.eval(problem.eval_pos_.data(), 11, eval_points.data());
+
+    for(std::size_t i = 0; i < eval_points_size; i++)
+    {
+        EXPECT_LT(fabs(eval_points[i] - problem.expected_points_[i]), 0.001);
+    }
+}
