@@ -54,8 +54,8 @@ enum class BoundaryCondition
  */
 template<
     typename T,
-    std::size_t NumPoints,
-    std::size_t NumDims
+    std::size_t NumPoints = Dynamic,
+    std::size_t NumDims = Dynamic
 >
 class Spline
 {
