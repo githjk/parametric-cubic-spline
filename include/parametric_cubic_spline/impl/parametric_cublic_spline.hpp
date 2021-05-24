@@ -303,7 +303,7 @@ void Spline<T, NumPoints, NumDims>::tdma(
     internal::StorageType<T, NumPoints> &b,
     internal::StorageType<T, NumPoints> &c,
     internal::StorageType<T, NumPoints*NumDims> &d,
-    T *q
+    T *u
 )
 {
     // Perturbed problem?
@@ -311,15 +311,15 @@ void Spline<T, NumPoints, NumDims>::tdma(
     T vn = 0.0;
     if(is_perturbed)
     {
-        assert(q && "q must not be a null pointer.");
+        assert(u && "u must not be a null pointer.");
 
         // Initialize q and u with zero
-        for(std::size_t i = 1; i <num_points; i++) q[i] = 0.0;
+        for(std::size_t i = 1; i <num_points; i++) u[i] = 0.0;
 
         // Modify problem
         vn = a[0]/b[0];
-        q[0] = -b[0];
-        q[num_points-1] = c[num_points-1];
+        u[0] = -b[0];
+        u[num_points-1] = c[num_points-1];
         a[0] = 0;
         b[0] = 2*b[0];
         b[num_points-1] = b[num_points-1] + c[num_points-1]*vn;
@@ -332,7 +332,7 @@ void Spline<T, NumPoints, NumDims>::tdma(
     {
         T f = a[i]/b[i-1];
         b[i] = b[i] - f*c[i-1];
-        if(is_perturbed) q[i] = q[i] - f*q[i-1];
+        if(is_perturbed) u[i] = u[i] - f*u[i-1];
         for(std::size_t j = 0; j < num_dims; j++)
         {
             d[i*num_dims+j] = d[i*num_dims+j] - f*d[(i-1)*num_dims+j];
@@ -341,7 +341,7 @@ void Spline<T, NumPoints, NumDims>::tdma(
 
     // Backward substitution
     // i = n:
-    if(is_perturbed) q[num_points-1] = q[num_points-1]/b[num_points-1];
+    if(is_perturbed) u[num_points-1] = u[num_points-1]/b[num_points-1];
     for(std::size_t j = 0; j < num_dims; j++)
     {
         d[(num_points-1)*num_dims+j] = d[(num_points-1)*num_dims+j]/b[num_points-1];
@@ -349,7 +349,7 @@ void Spline<T, NumPoints, NumDims>::tdma(
     // i = n-1 ... 0:
     for(int i = num_points-2; i >= 0; i--)
     {
-        if(is_perturbed) q[i] = (q[i] - c[i]*q[i+1])/b[i];
+        if(is_perturbed) u[i] = (u[i] - c[i]*u[i+1])/b[i];
         for(std::size_t j = 0; j < num_dims; j++)
         {
             d[i*num_dims+j] = (d[i*num_dims+j] - c[i]*d[(i+1)*num_dims+j])/b[i];
@@ -359,14 +359,14 @@ void Spline<T, NumPoints, NumDims>::tdma(
     if(is_perturbed)
     {
         // Reconstruct solution
-        T vq = q[0] - q[num_points-1]*vn;
+        T vq = u[0] - u[num_points-1]*vn;
         for(std::size_t j = 0; j < num_dims; j++)
         {
             T vy = d[j] - d[(num_points-1)*num_dims+j]*vn;
             T k = vy/(1 + vq);
             for(std::size_t i = 0; i < num_points; i++)
             {
-                d[i*num_dims+j] = d[i*num_dims+j] - k*q[i];
+                d[i*num_dims+j] = d[i*num_dims+j] - k*u[i];
             }
         }
     }
