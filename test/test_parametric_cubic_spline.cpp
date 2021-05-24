@@ -96,6 +96,20 @@ static const TestProblem test_problem2(
      -0.3003, 1.0731, 0.1116, 0.8576, 0.2784, 0.1424, \
       0.2268,-0.6352, 0.0000,-1.0000 }
 );
+static const TestProblem test_problem3(
+    { 1.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0,-1.0 }, 
+    4, 
+    2,
+    BoundaryCondition::Periodic,
+    BoundaryCondition::Periodic,
+    { 0.0, 0.0 },
+    { 0.0, 0.0 },
+    { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 },
+    { 1.0000, 0.0000, 0.5050, 0.0630,-0.2600,-0.0360, \
+     -0.8900,-0.0540,-1.0160, 0.2240,-0.6875, 0.6875, \
+     -0.2240, 1.0160, 0.0540, 0.8900, 0.0360, 0.2600, \
+     -0.0630,-0.5050, 0.0000,-1.0000 }
+);
 
 
 class MyTestFixture: public ::testing::TestWithParam<TestProblem> { 
@@ -126,7 +140,6 @@ TEST_P(MyTestFixture, MyTestName)
 
     for(std::size_t i = 0; i < eval_points_size; i++)
     {
-        std::cout << eval_points[i] << " | " << problem.expected_points_[i] << std::endl;
         EXPECT_LT(fabs(eval_points[i] - problem.expected_points_[i]), 0.001);
     }
 }
@@ -136,6 +149,7 @@ INSTANTIATE_TEST_SUITE_P(
     MyTestFixture,
     ::testing::Values(
         test_problem1,
-        test_problem2
+        test_problem2,
+        test_problem3
     )
 );

@@ -340,12 +340,13 @@ void Spline<T, NumPoints, NumDims>::tdma(
 
     // Backward substitution
     // i = n:
+    if(is_perturbed) q[num_points-1] = u[num_points-1]/b[num_points-1];
     for(std::size_t j = 0; j < num_dims; j++)
     {
         d[(num_points-1)*num_dims+j] = d[(num_points-1)*num_dims+j]/b[num_points-1];
     }
     // i = n-1 ... 0:
-    for(std::size_t i = num_points-2; i >= 0; i--)
+    for(int i = num_points-2; i >= 0; i--)
     {
         if(is_perturbed) q[i] = (u[i] - c[i]*q[i+1])/b[i];
         for(std::size_t j = 0; j < num_dims; j++)
@@ -364,7 +365,7 @@ void Spline<T, NumPoints, NumDims>::tdma(
             T k = vy/(1 + vq);
             for(std::size_t i = 0; i < num_points; i++)
             {
-                d[(i-1)*num_dims+j] = d[(i-1)*num_dims+j] - k*q[i];
+                d[i*num_dims+j] = d[i*num_dims+j] - k*q[i];
             }       
         }        
     }
